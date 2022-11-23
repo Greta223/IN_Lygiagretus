@@ -7,9 +7,12 @@ from typing import Any
 from PIL import Image
 from shutil import copyfile
 import os, os.path
+import cv2
+import time
 
 start = time.time()
 
+resultPath = 'C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/Results/'
 highResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/HighResolutionImages"
 lowResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/LowResolutionImages"
 def readImages(path):
@@ -27,68 +30,36 @@ def readImages(path):
 
 
 def filterImages(images: list, thresholdWidth: int, thresholdHeight: int, mypath: Any):
-
-    filteredImages = []
+    count = 0
     for i in images:
-        #image = Image.open("C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/HighResolutionImages/pexels-flo-dahm-699466.jpg")
-        # Storing width and height of a image
-        image = Image.open(mypath + "/" + i)
-        width, height = image.size
+        image = cv2.imread(str(mypath) + '/' + i)
+        height = image.shape[0]
+        width = image.shape[1]
 
-        # if only width exceeds the thresholdWidth
-        if (width > thresholdWidth and
-                height <= thresholdHeight):
+        if (width <= thresholdWidth and height <= thresholdHeight):
+            img_rst = cv2.GaussianBlur(image, (9,9), cv2.BORDER_DEFAULT)
+            cv2.imwrite(str(resultPath) + str(count)+'.png', img_rst)
+            count += 1
 
-            image.resize((thresholdWidth,
-                          (thresholdWidth * height)
-                          // width)).save(i)
-
-        # if only height exceeds the thresholdHeight
-        elif (width <= thresholdWidth and
-              height > thresholdHeight):
-
-            image.resize(((thresholdHeight * width)
-                          // height, thresholdHeight)).save(i)
-
-        # if both the parameters exceeds
-        # the threshold attributes
-        elif (width > thresholdWidth and
-              height > thresholdHeight):
-
-            image.resize((thresholdWidth, thresholdHeight)).save(i)
-
-        copyfile(mypath + "/" + i,
-                 mypath + "/filteredImages" + i)
-
-        filteredImages.append(i)
-
-    # returning the filteredImages array
-    return filteredImages
-
-def run_filtering(process: int, images: list):
-    """
-    Inputs:
-        process: (int) number of process to run
-        images_url:(list) list of images url
-    """
-    print(f'MESSAGE: Running {process} process')
-
-    #results = ThreadPool(process).imap_unordered(filterImages(readImages(highResolutionPath), 1000, 1000, highResolutionPath), images)
-    #for r in results:
-     #   print(r)
-
-
+        elif (width <= thresholdWidth and height >= thresholdHeight):
+            img_rst = cv2.GaussianBlur(image, (5, 5), cv2.BORDER_DEFAULT)
+            cv2.imwrite(str(resultPath) + str(count) + '.png', img_rst)
+            count += 1
 
 if __name__ == '__main__':
     highResolutionImages = list(readImages(highResolutionPath))
-    lowResulutionImages = readImages(lowResolutionPath)
-    #filteredImages = filterImages(highResolutionImages, 1000, 1000, highResolutionPath)
+    lowResulutionImages = list(readImages(lowResolutionPath))
+
     num_process = 10
     task = filterImages(highResolutionImages, 1000, 1000, highResolutionPath)
-
+    task2 = filterImages(lowResulutionImages, 1000, 1000, lowResolutionPath)
     print(f'MESSAGE: Running {num_process} process')
     ThreadPool(num_process).imap_unordered(task, highResolutionImages)
 
     end = time.time()
     print('Time taken to resize {}'.format(len(highResolutionImages)))
+    print(end - start)
+    ThreadPool(num_process).imap_unordered(task2, lowResulutionImages)
+    end = time.time()
+    print('Time taken to resize {}'.format(len(lowResulutionImages)))
     print(end - start)
