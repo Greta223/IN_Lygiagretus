@@ -16,7 +16,7 @@ import time
 resultPathSmall = 'C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/ResultsSmall/'
 resultPathMedium = 'C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/ResultsMedium/'
 resultPathLarge = 'C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/ResultsLarge/'
-smallResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/SmallResolutionImages10"
+smallResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/SmallResolutionImages300"
 mediumResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/MediumResolutionImages10"
 largeResolutionPath = "C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/LargeResolutionImages10"
 results = 'C:/Users/Vartotojas/OneDrive - Kaunas University of Technology/Darbalaukis/IN_Lygiagretus/Results/'
@@ -35,10 +35,7 @@ def readImages(path):
 
 
 def blurImages(picture):
-
     print(f'Process {mp.current_process().name} started working on task {picture}', flush=True)
-    now = datetime.now()
-    date_time = now.strftime("%m_%d_%Y%H_%M_%S")
     image = cv2.imread(str(smallResolutionPath) + '/' + picture)
     img_rst = cv2.GaussianBlur(image, (9, 9), cv2.BORDER_DEFAULT)
     cv2.imwrite(f'{str(results)}{str(picture)}.png', img_rst)
@@ -49,10 +46,10 @@ if __name__ == '__main__':
     mediumResolutionImages = list(readImages(mediumResolutionPath))
     largeResolutionImages = list(readImages(largeResolutionPath))
 
-    num_process = 4
+    num_process = 1
     CPU_COUNT = mp.cpu_count()
     print(CPU_COUNT)
     start = time.monotonic()
-    with Pool(4) as pool:
+    with Pool(num_process) as pool:
         iterator = pool.map(blurImages, smallResolutionImages)
     print(f'time took: {time.monotonic() - start:.4f}')
